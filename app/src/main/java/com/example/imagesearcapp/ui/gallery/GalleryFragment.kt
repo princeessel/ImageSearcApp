@@ -5,14 +5,18 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
 import com.example.imagesearcapp.R
+import com.example.imagesearcapp.data.Photo
 import com.example.imagesearcapp.databinding.FragmentImageGalleryBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class GalleryFragment : Fragment(R.layout.fragment_image_gallery) {
+class GalleryFragment : Fragment(R.layout.fragment_image_gallery), PhotoAdapter.OnItemClickListener {
     private val viewModel by viewModels<GalleryViewModel> ()
     private var _binding: FragmentImageGalleryBinding? = null
     private val binding get() = _binding!!
@@ -26,7 +30,7 @@ class GalleryFragment : Fragment(R.layout.fragment_image_gallery) {
         super.onViewCreated(view, savedInstanceState)
 
         _binding = FragmentImageGalleryBinding.bind(view)
-        val adapter = PhotoAdapter()
+        val adapter = PhotoAdapter(this)
         binding.apply {
             recyclerView.setHasFixedSize(true)
             recyclerView.adapter = adapter.withLoadStateHeaderAndFooter(
@@ -38,6 +42,23 @@ class GalleryFragment : Fragment(R.layout.fragment_image_gallery) {
 
         viewModel.photos.observe(viewLifecycleOwner) {
             adapter.submitData(viewLifecycleOwner.lifecycle, it)
+        }
+
+        adapter.addLoadStateListener { loadState ->
+            binding.apply {
+                progressBar.isVisible = loadState.source.refresh is LoadState.Loading
+                recyclerView.isVisible = loadState.source.refresh is LoadState.NotLoading
+                retryButton.isVisible = loadState.source.refresh is LoadState.Error
+                errorTv.isVisible = loadState.source.refresh is LoadState.Error
+
+                if (loadState.source.refresh is LoadState.NotLoading &&
+                        loadState.append.endOfPaginationReached && adapter.itemCount < 1) {
+                    recyclerView.isVisible = false
+                    noResultsTv.isVisible = true
+                } else {
+                    noResultsTv.isVisible = false
+                }
+            }
         }
     }
 
@@ -69,5 +90,11 @@ class GalleryFragment : Fragment(R.layout.fragment_image_gallery) {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onItemClick(photo: Photo) {
+        val action = GalleryFragmentDirections.actionGalleryFragmentToPhotoDetailsFragment(photo)
+        findNavController().navigate(action)
+
     }
 }

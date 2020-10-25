@@ -12,7 +12,7 @@ import com.example.imagesearcapp.R
 import com.example.imagesearcapp.data.Photo
 import com.example.imagesearcapp.databinding.UnsplashPhotoItemBinding
 
-class PhotoAdapter : PagingDataAdapter<Photo, PhotoAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
+class PhotoAdapter(private val listener: OnItemClickListener) : PagingDataAdapter<Photo, PhotoAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
         val binding =
@@ -30,8 +30,20 @@ class PhotoAdapter : PagingDataAdapter<Photo, PhotoAdapter.PhotoViewHolder>(PHOT
     }
 
 
-    class PhotoViewHolder(private val binding: UnsplashPhotoItemBinding) :
+    inner class PhotoViewHolder(private val binding: UnsplashPhotoItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
+
+        init {
+            binding.root.setOnClickListener{
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    val item = getItem(position)
+                    if (item != null) {
+                        listener.onItemClick(item)
+                    }
+                }
+            }
+        }
 
         fun bind(photo: Photo) {
             binding.apply {
@@ -46,6 +58,10 @@ class PhotoAdapter : PagingDataAdapter<Photo, PhotoAdapter.PhotoViewHolder>(PHOT
             }
         }
 
+    }
+
+    interface OnItemClickListener {
+        fun onItemClick(photo: Photo)
     }
 
     companion object {

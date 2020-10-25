@@ -8,6 +8,19 @@
     <fragment
         android:id="@+id/galleryFragment"
         android:name="com.example.imagesearcapp.ui.gallery.GalleryFragment"
-        android:label="fragment_image_gallery"
-        tools:layout="@layout/fragment_image_gallery" />
+        android:label="Gallery"
+        tools:layout="@layout/fragment_image_gallery">
+        <action
+            android:id="@+id/action_galleryFragment_to_photoDetailsFragment"
+            app:destination="@id/photoDetailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/photoDetailsFragment"
+        android:name="com.example.imagesearcapp.details.PhotoDetailsFragment"
+        android:label="Photo"
+        tools:layout="@layout/fragment_photo_details">
+        <argument
+            android:name="photo"
+            app:argType="com.example.imagesearcapp.data.Photo" />
+    </fragment>
 </navigation>
